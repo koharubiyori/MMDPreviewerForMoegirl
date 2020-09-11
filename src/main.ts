@@ -55,10 +55,11 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
   const containerWidth = mmdContainer.dataset.canvasWidth ? parseInt(mmdContainer.dataset.canvasWidth) : defaultContainerWidth
   const containerHeight = mmdContainer.dataset.canvasHeight ? parseInt(mmdContainer.dataset.canvasHeight) : defaultContainerHeight
   
+  mmdContainer.style.width = containerWidth + 'px'
+  mmdContainer.style.height = containerHeight + 'px'
+  mmdContainer.style.textAlign = 'center'
+  
   if (!navigator.serviceWorker) {
-    mmdContainer.style.width = containerWidth + 'px'
-    mmdContainer.style.height = containerHeight + 'px'
-    mmdContainer.style.textAlign = 'center'
     hintTextEl.textContent = '您的浏览器不支持模型预览'
     return
   }
@@ -110,9 +111,11 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
   }
 
   function initScene() {    
+    const bgColor = mmdContainer.dataset.bgcolor || '#eee'
+    
     // 创建场景
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('white')
+    scene.background = new THREE.Color(bgColor)
     
     // 创建摄像机
     const camera = new THREE.PerspectiveCamera(50, containerWidth / containerHeight, 1, 2000)
