@@ -15,8 +15,14 @@ const defaultContainerWidth = 300
 const defaultContainerHeight = 500
 const mmdLoadingTimeout = 20000
 
-const mmdPreviewers = document.querySelectorAll('.mmdPreviewerContainer')
-mmdPreviewers.forEach(item => createMmdPreviewer(item as HTMLDivElement))
+const init = () => {
+  const mmdPreviewers = document.querySelectorAll('.mmdPreviewerContainer')
+  mmdPreviewers.forEach(item => createMmdPreviewer(item as HTMLDivElement))
+}
+
+window.__mmdPreviewerWidgetInit = init
+
+process.env.NODE_ENV == 'development' && init()
 
 // const uploadInput = document.createElement('input')
 // uploadInput.type = 'file'
