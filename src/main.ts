@@ -117,7 +117,7 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
   }
 
   function initScene() {    
-    const bgColor = mmdContainer.dataset.bgcolor || '#eee'
+    const bgColor = mmdContainer.dataset.bgcolor
     
     // 创建场景
     const scene = new THREE.Scene()
