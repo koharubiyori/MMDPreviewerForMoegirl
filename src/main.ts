@@ -118,6 +118,7 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
 
   function initScene() {    
     const bgColor = mmdContainer.dataset.bgcolor
+    const lightColor = mmdContainer.dataset.lightColor
     
     // 创建场景
     const scene = new THREE.Scene()
@@ -135,7 +136,7 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
     renderer.domElement.style.outline = 'none'
     
     // 添加全景光，否则模型是暗的
-    const ambient = new THREE.AmbientLight('#eee')
+    const ambient = new THREE.AmbientLight(lightColor)
     scene.add(ambient)
 
     renderer.render(scene, camera)
