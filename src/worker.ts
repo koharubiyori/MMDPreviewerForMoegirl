@@ -1,7 +1,8 @@
-import JSZip from 'jszip'
 import iconv from 'iconv-lite'
 import { SIMULATED_MMD_RESOURCE_FOLDER_FLAG } from './constants'
 import { ChannelMassageMaps } from './main'
+import loadScript from './utils/loadScript'
+import JSZipType from 'jszip' // 这个模块只作为类型使用，在webpack中被替换为了一个占位对象
 
 export interface WorkerMessageMaps {
   zipReady: {
@@ -12,9 +13,9 @@ export interface WorkerMessageMaps {
   }
 }
 
-;(() => {
+;(async () => {
   let messageChannelPort: MessagePort = null as any  // 用于回传数据的prot
-  let mmdData: JSZip | null = null  // 最终解压处理好的mmd数据
+  let mmdData: JSZipType | null = null  // 最终解压处理好的mmd数据
   
   // 拦截请求
   self.addEventListener('fetch', (e: any) => {
@@ -35,7 +36,7 @@ export interface WorkerMessageMaps {
       const filePath = generalized(originalPath)
       result[filePath] = mmdData!.files[originalPath]
       return result
-    }, {} as JSZip['files'])
+    }, {} as JSZipType['files'])
 
     if (!(pmxPath in mmdFiles)) { return }
 
@@ -60,15 +61,17 @@ export interface WorkerMessageMaps {
 
     // 接收mmd zip
     bindMsgHandler('zipReady', async data => {
+      await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.5.0/dist/jszip.min.js')
       mmdData = await unzip(data.file as any)
     
-      const pmxFileName = Object.keys(mmdData.files).find(item => /\.pmx$/.test(item))!
+      const pmxFileName = Object.keys(mmdData!.files).find(item => /\.pmx$/.test(item))!
       // mmd数据准备完毕，通知主线程
       postChannelMessage('mmdDataReady', { pmxFileName })
     })
   })
   
   function unzip(zipData: Blob) {
+    const JSZip: JSZipType = (self as any).JSZip
     const zip = new JSZip()
     return zip.loadAsync(zipData, {
       // 全转日文编码(shift jis)

@@ -11,9 +11,9 @@
     "type-check:watch": "npm run type-check -- --watch"
   },
   "dependencies": {
+    "@types/jszip": "^3.4.1",
     "buffer": "^5.6.0",
     "iconv-lite": "^0.6.2",
-    "jszip": "^3.5.0",
     "stream-browserify": "^3.0.0",
     "three": "^0.120.0"
   },

@@ -21,10 +21,9 @@ module.exports = {
     rules: webpackRules
   },
 
-  // externals: {
-  //   three: 'three',
-  //   jszip: 'JSZip'
-  // },
+  externals: {
+    jszip: 'String'
+  },
 
   resolve: {
     extensions: ['.ts', '.js', '.json'], // 如果引入时没带后缀名，则会依次尝试这里定义的后缀名
