@@ -11,9 +11,10 @@ export interface ChannelMassageMaps {
   invalidMmdZipFormat: {}
 }
 
+
 const defaultContainerWidth = 300
 const defaultContainerHeight = 500
-const mmdLoadingTimeout = 20000
+const mmdLoadingTimeout = 600000
 
 const init = () => {
   const mmdPreviewers = document.querySelectorAll('.mmdPreviewerContainer')
@@ -60,6 +61,7 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
 
   const containerWidth = mmdContainer.dataset.canvasWidth ? parseInt(mmdContainer.dataset.canvasWidth) : defaultContainerWidth
   const containerHeight = mmdContainer.dataset.canvasHeight ? parseInt(mmdContainer.dataset.canvasHeight) : defaultContainerHeight
+  const mmdDataEncoding = mmdContainer.dataset.encoding!
   
   mmdContainer.style.width = containerWidth + 'px'
   mmdContainer.style.height = containerHeight + 'px'
@@ -106,10 +108,14 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
     const hintTextEl = document.createElement('span')
     hintTextEl.style.cssText = `
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     `
     mmdContainer.appendChild(hintTextEl)
     
@@ -161,6 +167,8 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
   }
 
   function loadMmdZip() {
+    hintTextEl.textContent = '请求资源中...'
+    
     const MMDZipUrl = mmdContainer.dataset.source!
     const xhr = new XMLHttpRequest()
     xhr.open('get', MMDZipUrl)
@@ -174,7 +182,10 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
 
     xhr.onload = () => {
       if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-        postWorkerMessage('zipReady', { file: xhr.response })
+        postWorkerMessage('zipReady', { 
+          file: xhr.response, 
+          encoding: mmdDataEncoding
+        })
         hintTextEl.style.display = 'none'
       } else {
         hintTextEl.textContent = '加载失败，点击重试'

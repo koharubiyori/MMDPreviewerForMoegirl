@@ -1,4 +1,3 @@
-import iconv from 'iconv-lite'
 import { SIMULATED_MMD_RESOURCE_FOLDER_FLAG } from './constants'
 import { ChannelMassageMaps } from './main'
 import loadScript from './utils/loadScript'
@@ -7,6 +6,7 @@ import JSZipType from 'jszip' // 这个模块只作为类型使用，在webpack�
 export interface WorkerMessageMaps {
   zipReady: {
     file: Blob | ArrayBuffer
+    encoding: string
   }
   initMessageChannel: {
     messageChannelPort: MessagePort
@@ -23,20 +23,21 @@ export interface WorkerMessageMaps {
     // const originFetch = () => e.respondWith(fetch(e.request))  // 返回原始请求
     if (!mmdData) { return }
 
-    let [_, simulatedFolderName, pmxPath] = e.request.url.replace(e.target.origin + '/', '').match(/^(.+?)\/(.+)$/)
+    let [_, simulatedFolderName, pmxPath]: [string, string, string] = e.request.url.replace(e.target.origin + '/', '').match(/^(.+?)\/(.+)$/)
     if (simulatedFolderName !== SIMULATED_MMD_RESOURCE_FOLDER_FLAG) { return }
 
     // MMD loader会进行encodeURIComponent，这里将路径解码
     // 有些模型的贴图文件夹首字母大小写和pmx里保存的不一致，这里全部转换为小写
     const generalized = (path: string) => decodeURIComponent(path).toLowerCase()
     
-    pmxPath = generalized(pmxPath)
-
     const mmdFiles = Object.keys(mmdData.files).reduce((result, originalPath) => {
       const filePath = generalized(originalPath)
       result[filePath] = mmdData!.files[originalPath]
       return result
     }, {} as JSZipType['files'])
+
+    pmxPath = generalized(pmxPath)
+    // pmxPath = iconv.decode(Buffer.from(pmxPath.split('').map(item => item.charCodeAt(0))), 'shiftjis') 
 
     if (!(pmxPath in mmdFiles)) { return }
 
@@ -62,7 +63,7 @@ export interface WorkerMessageMaps {
     // 接收mmd zip
     bindMsgHandler('zipReady', async data => {
       await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.5.0/dist/jszip.min.js')
-      mmdData = await unzip(data.file as any)
+      mmdData = await unzip(data.file as any, data.encoding)
     
       const pmxFileName = Object.keys(mmdData!.files).find(item => /\.pmx$/.test(item))!
       // mmd数据准备完毕，通知主线程
@@ -70,12 +71,14 @@ export interface WorkerMessageMaps {
     })
   })
   
-  function unzip(zipData: Blob) {
+  function unzip(zipData: ArrayBuffer, encoding: string) {
     const JSZip: JSZipType = (self as any).JSZip
     const zip = new JSZip()
+
+    const decoder = new TextDecoder(encoding)
+    
     return zip.loadAsync(zipData, {
-      // 全转日文编码(shift jis)
-      decodeFileName: (bytes: Buffer) => iconv.decode(bytes, 'shiftjis')
+      decodeFileName: (fileNameBytes: any) => decoder.decode(fileNameBytes)
     } as any)
   }
 
