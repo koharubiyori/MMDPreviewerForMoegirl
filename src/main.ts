@@ -62,6 +62,7 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
   const containerWidth = mmdContainer.dataset.canvasWidth ? parseInt(mmdContainer.dataset.canvasWidth) : defaultContainerWidth
   const containerHeight = mmdContainer.dataset.canvasHeight ? parseInt(mmdContainer.dataset.canvasHeight) : defaultContainerHeight
   const mmdDataEncoding = mmdContainer.dataset.encoding!
+  const useAntialias = mmdContainer.dataset.antialias === 'true'
   
   mmdContainer.style.width = containerWidth + 'px'
   mmdContainer.style.height = containerHeight + 'px'
@@ -128,15 +129,16 @@ async function createMmdPreviewer(mmdContainer: HTMLDivElement) {
     
     // 创建场景
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(bgColor)
+    if (bgColor !== 'transparent') scene.background = new THREE.Color(bgColor)
     
     // 创建摄像机
     const camera = new THREE.PerspectiveCamera(50, containerWidth / containerHeight, 1, 2000)
     camera.position.z = 24
     
     // 创建渲染器
-    const renderer = new THREE.WebGLRenderer()
-    renderer.setPixelRatio(window.devicePixelRatio * 2) // 二倍像素防锯齿
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: useAntialias })
+    bgColor === 'transparent' && renderer.setClearAlpha(0.0)
+    renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(containerWidth, containerHeight)
     mmdContainer.appendChild(renderer.domElement)
     renderer.domElement.style.outline = 'none'

@@ -37,7 +37,6 @@ export interface WorkerMessageMaps {
     }, {} as JSZipType['files'])
 
     pmxPath = generalized(pmxPath)
-    // pmxPath = iconv.decode(Buffer.from(pmxPath.split('').map(item => item.charCodeAt(0))), 'shiftjis') 
 
     if (!(pmxPath in mmdFiles)) { return }
 
